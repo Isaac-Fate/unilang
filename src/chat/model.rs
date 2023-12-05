@@ -1,34 +1,28 @@
-use super::{
-    ChatModelName, 
-    ChatMessage,
-};
+use super::ChatModelName;
 
 #[derive(Debug)]
 pub struct ChatModel {
     pub name: ChatModelName,
-    pub messages: Vec<ChatMessage>,
     pub temperature: f32,
     pub top_p: f32,
     pub presence_penalty: f32,
-    pub system: Option<String>,
+    pub profile: Option<String>,
 }
 
 impl ChatModel {
     pub fn new(
-        name: ChatModelName, 
-        messages: Vec<ChatMessage>,
+        name: ChatModelName,
         temperature: f32,
         top_p: f32,
         presence_penalty: f32,
-        system: Option<String>,
+        profile: Option<String>,
     ) -> Self {
         Self {
             name,
-            messages,
             temperature,
             top_p,
             presence_penalty,
-            system,
+            profile,
         }
     }
 
@@ -40,34 +34,26 @@ impl ChatModel {
 
 pub struct ChatModelBuilder {
     name: ChatModelName,
-    messages: Vec<ChatMessage>,
     temperature: f32,
     top_p: f32,
     presence_penalty: f32,
-    system: Option<String>,
+    profile: Option<String>,
 }
 
 impl ChatModelBuilder {
     pub fn new() -> Self {
         Self {
             name: ChatModelName::OpenAIGPT3_5Turbo16K,
-            messages: vec![],
             temperature: 1.0,
             top_p: 1.0,
             presence_penalty: 1.0,
-            system: None,
+            profile: None,
         }
     }
 
     /// Set the name of the chat model.
     pub fn name(mut self, name: ChatModelName) -> Self {
         self.name = name;
-        self
-    }
-
-    /// Set the messages to be sent to the chat model.
-    pub fn messages(mut self, messages: Vec<ChatMessage>) -> Self {
-        self.messages = messages;
         self
     }
 
@@ -89,8 +75,8 @@ impl ChatModelBuilder {
     }
 
     /// Set the system prompt of the chat model, which serves as the profile.
-    pub fn system(mut self, system: Option<String>) -> Self {
-        self.system = system;
+    pub fn profile(mut self, profile: Option<String>) -> Self {
+        self.profile = profile;
         self
     }
 
@@ -98,11 +84,10 @@ impl ChatModelBuilder {
     pub fn build(self) -> ChatModel {
         ChatModel::new(
             self.name,
-            self.messages,
             self.temperature,
             self.top_p,
             self.presence_penalty,
-            self.system,
+            self.profile,
         )
     }
 }

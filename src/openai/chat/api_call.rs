@@ -2,11 +2,11 @@ use anyhow::{Result, anyhow};
 use super::{
     super::OPENAI_API_KEY,
     OpenAIChatRequestBody,
-    OpenAIChatResponse,
+    OpenAIChatCompletion,
 };
 
 /// Call OpenAI chat API and return a complete chat response.
-pub async fn get_complete_chat_response(request_body: &OpenAIChatRequestBody) -> Result<OpenAIChatResponse> {
+pub async fn get_complete_chat_response(request_body: &OpenAIChatRequestBody) -> Result<OpenAIChatCompletion> {
     // Convert to a map
     let mut request_body = serde_json::to_value(request_body)?.as_object()
         .unwrap()
@@ -33,28 +33,20 @@ pub async fn get_complete_chat_response(request_body: &OpenAIChatRequestBody) ->
     // Parse the response content
     // If the response is successful, parse the response content as OpenAIChatResponse
     // If the response is not successful, parse the response content as QianfanError
-    if let Ok(response) = serde_json::from_str::<OpenAIChatResponse>(&response_content) {
+    if let Ok(response) = serde_json::from_str::<OpenAIChatCompletion>(&response_content) {
         Ok(response)
     } else {
-        // Err(
-        //     serde_json::from_str::<QianfanError>(&response_content)?.into()
-        // )
         Err(anyhow!(response_content))
     }
 }
-
-// /// Call Qianfan chat API and return a stream of chat responses.
-// pub async fn get_streamed_chat_response(request_body: &OpenAIChatRequestBody) -> Result<impl Stream<Item = OpenAIChatResponse>> {
-//     todo!()
-// }
 
 
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
-    use crate::chat::{
-        ChatMessage,
-        ChatRole,
+    use crate::openai::chat::{
+        OpenAIChatMessage,
+        OpenAIChatRole,
     };
     use super::{
         get_complete_chat_response,
@@ -64,14 +56,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_complete_chat_response() -> Result<()> {
-
-
         // Call API to get chat response
         let response = get_complete_chat_response(
             &OpenAIChatRequestBody::builder()
                 .messages(vec![
-                    ChatMessage {
-                        role: ChatRole::User,
+                    OpenAIChatMessage{
+                        role: OpenAIChatRole::User,
                         content: "What is Rust?".to_string(),
                     },
                 ])
@@ -83,25 +73,4 @@ mod tests {
 
         Ok(())
     }
-
-    // #[tokio::test]
-    // async fn test_get_streamed_chat_response() -> Result<()> {
-
-    //     // Call API to get chat response
-    //     let mut response = get_streamed_chat_response(
-    //         &OpenAIChatRequestBody::default()
-    //             .messages(vec![
-    //                 ChatMessage {
-    //                     role: ChatRole::User,
-    //                     content: "What is Rust?".to_string(),
-    //                 },
-    //             ])
-    //     ).await?;
-
-    //     while let Some(response) = response.next().await {
-    //         println!("{:#?}", response);
-    //     }
-
-    //     Ok(())
-    // }
 }

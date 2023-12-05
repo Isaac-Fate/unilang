@@ -1,13 +1,12 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
-use crate::chat::ChatMessage;
-
+use super::OpenAIChatMessage;
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize)]
 pub struct OpenAIChatRequestBody {
     pub model: String,
-    pub messages: Vec<ChatMessage>,
+    pub messages: Vec<OpenAIChatMessage>,
     pub temperature: f32,
     pub top_p: f32,
     pub presence_penalty: f32,
@@ -19,7 +18,7 @@ impl OpenAIChatRequestBody {
 
     pub fn new(
         model: &str,
-        messages: Vec<ChatMessage>,
+        messages: Vec<OpenAIChatMessage>,
         temperature: f32,
         top_p: f32,
         presence_penalty: f32,
@@ -46,7 +45,7 @@ impl OpenAIChatRequestBody {
 
 pub struct OpenAIChatRequestBodyBuilder {
     model: String,
-    messages: Vec<ChatMessage>,
+    messages: Vec<OpenAIChatMessage>,
     temperature: f32,
     top_p: f32,
     presence_penalty: f32,
@@ -57,7 +56,7 @@ pub struct OpenAIChatRequestBodyBuilder {
 impl OpenAIChatRequestBodyBuilder {
     pub fn new() -> Self {
         Self {
-            model: "".to_string(),
+            model: "gpt-3.5-turbo".to_string(),
             messages: vec![],
             temperature: 0.0,
             top_p: 0.0,
@@ -67,36 +66,37 @@ impl OpenAIChatRequestBodyBuilder {
         }
     }
 
+    /// Set model name.
     pub fn model(mut self, model: &str) -> Self {
         self.model = model.to_string();
         self
     }
 
-    pub fn messages(mut self, messages: Vec<ChatMessage>) -> Self {
+    /// Set messages.
+    pub fn messages(mut self, messages: Vec<OpenAIChatMessage>) -> Self {
         self.messages = messages;
         self
     }
 
+    /// Set temperature, which controls the randomness of the output.
     pub fn temperature(mut self, temperature: f32) -> Self {
         self.temperature = temperature;
         self
     }
 
+    /// Set top_p, which controls the diversity of the output via nucleus sampling.
     pub fn top_p(mut self, top_p: f32) -> Self {
         self.top_p = top_p;
         self
     }
 
+    /// Set presence_penalty, which penalizes new tokens based on whether they appear in the text so far.
     pub fn presence_penalty(mut self, presence_penalty: f32) -> Self {
         self.presence_penalty = presence_penalty;
         self
     }
 
-    pub fn system(mut self, system: &str) -> Self {
-        self.system = Some(system.to_string());
-        self
-    }
-
+    /// Set user ID.
     pub fn user_id(mut self, user_id: &str) -> Self {
         self.user_id = Some(user_id.to_string());
         self

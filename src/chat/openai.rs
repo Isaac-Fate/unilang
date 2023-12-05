@@ -4,13 +4,17 @@ use crate::{
         ChatModel, 
         ChatModelName, 
         ChatMessage,
+        ChatRole,
         ChatResponse,
         ChatTokenUsage,
     },
     openai::{
         self,
         chat::{
-            OpenAIChatRequestBody, OpenAIChatResponse,
+            OpenAIChatRequestBody, 
+            OpenAIChatCompletion, 
+            OpenAIChatMessage,
+            OpenAIChatRole,
         }
     },
 };
@@ -27,7 +31,32 @@ pub async fn get_complete_chat_response(
         openai::chat::get_complete_chat_response(
             &OpenAIChatRequestBody::builder()
                 .model(model_name.as_str())
-                .messages(messages)
+                .messages(
+                    // Add profile to the first message if it exists
+                    match &model.profile {
+                        Some(profile) => vec![
+                            OpenAIChatMessage {
+                                role: OpenAIChatRole::System,
+                                content: profile.to_string(),
+                            }
+                        ],
+                        None => vec![],
+                    }.into_iter()
+
+                    // Messages of the user and the assistant
+                    .chain(
+                        messages
+                        .iter()
+                        .map(|message| OpenAIChatMessage {
+                            role: match message.role {
+                                ChatRole::User => OpenAIChatRole::User,
+                                ChatRole::Assistant => OpenAIChatRole::Assistant,
+                            },
+                            content: message.content.to_owned(),
+                        })
+                    )
+                    .collect::<Vec<OpenAIChatMessage>>()
+                )
                 .temperature(0.9)
                 .build()
         ).await?
@@ -40,12 +69,13 @@ fn chat_model_name_to_string(model_name: &ChatModelName) -> Result<String> {
     match model_name {
         ChatModelName::OpenAIGPT3_5Turbo => Ok("gpt-3.5-turbo".to_string()),
         ChatModelName::OpenAIGPT3_5Turbo16K => Ok("gpt-3.5-turbo-16k".to_string()),
+        ChatModelName::OpenAIGPT4 => Ok("gpt-4".to_string()),
         _ => Err(anyhow!("{:?} is not available in OpenAI's chat models", model_name)),
     }
 }
 
-impl From<OpenAIChatResponse> for ChatResponse {
-    fn from(response: OpenAIChatResponse) -> Self {
+impl From<OpenAIChatCompletion> for ChatResponse {
+    fn from(response: OpenAIChatCompletion) -> Self {
         Self {
             content: response.choices
                 .first()

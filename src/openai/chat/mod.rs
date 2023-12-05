@@ -1,5 +1,8 @@
+mod message;
+pub use message::{OpenAIChatMessage, OpenAIChatRole};
+
 mod response;
-pub use response::OpenAIChatResponse;
+pub use response::OpenAIChatCompletion;
 
 mod model_names;
 pub use model_names::OpenAIChatModelName;

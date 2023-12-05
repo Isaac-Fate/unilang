@@ -38,7 +38,7 @@ mod tests {
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
         let model = ChatModel::builder()
-            .name(ChatModelName::OpenAIGPT3_5Turbo16K)
+            .name(ChatModelName::OpenAIGPT4)
             .build();
 
         let messages = vec![

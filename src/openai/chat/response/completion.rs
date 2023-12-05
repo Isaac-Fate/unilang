@@ -1,10 +1,10 @@
 use serde::Deserialize;
-use super::OpenAIChatTokenUsage;
+use super::{super::OpenAIChatMessage, OpenAIChatTokenUsage};
 
 #[derive(Debug, Deserialize)]
 pub struct OpenAIChatCompletion {
     pub id: String,
-    pub choices: Vec<OpenAIChatResponseChoice>,
+    pub choices: Vec<OpenAIChatCompletionChoice>,
     pub object: String,
     pub created: i64,
     pub model: String,
@@ -12,14 +12,9 @@ pub struct OpenAIChatCompletion {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct OpenAIChatResponseChoice {
+pub struct OpenAIChatCompletionChoice {
     pub finish_reason: String,
     pub index: u32,
-    pub message: OpenAIChatResponseMessage,
+    pub message: OpenAIChatMessage,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct OpenAIChatResponseMessage {
-    pub content: String,
-    pub role: String,
-}
