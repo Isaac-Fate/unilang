@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum QianfanChatModelName {
     ErnieBot4,
     ErnieBot,

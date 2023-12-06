@@ -1,6 +1,8 @@
-use anyhow::Result;
-use futures::stream::Stream;
+use anyhow::{Result, anyhow};
+use futures::Stream;
+use reqwest::Client;
 use super::super::get_access_token;
+use super::QianfanChatModelName;
 use super::{
     QianfanChatRequestBody,
     response::{
@@ -11,7 +13,11 @@ use super::{
 };
 
 /// Call Qianfan chat API and return a complete chat response.
-pub async fn get_complete_chat_response(request_body: &QianfanChatRequestBody) -> Result<QianfanChatResponse> {
+pub async fn get_complete_chat_response(
+    client: &Client,
+    model_name: QianfanChatModelName,
+    request_body: &QianfanChatRequestBody
+) -> Result<QianfanChatResponse> {
     // Convert to a map
     let mut request_body = serde_json::to_value(request_body)?.as_object()
         .unwrap()
@@ -23,10 +29,8 @@ pub async fn get_complete_chat_response(request_body: &QianfanChatRequestBody) -
     );
 
     // Call API to get chat response
-    let response = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
-        .build()?
-        .post("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant")
+    let response = client
+        .post(get_api_endpoint(model_name)?)
         .query(&[
             ("access_token", get_access_token().await?.as_str()),
         ])
@@ -79,38 +83,58 @@ pub async fn get_streamed_chat_response(request_body: &QianfanChatRequestBody) -
     )
 }
 
+fn get_api_endpoint(model_name: QianfanChatModelName) -> Result<&'static str> {
+    match model_name {
+        QianfanChatModelName::ErnieBot4 => Ok("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro"),
+        QianfanChatModelName::ErnieBot => Ok("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions"), 
+        QianfanChatModelName::ErnieBotTurbo => Ok("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant"),
+        _ => Err(anyhow!("{:?} is not supported", model_name)),
+
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
     use futures::stream::StreamExt;
-    use crate::chat::{
-        ChatMessage,
-        ChatRole,
-    };
     use super::{
         get_access_token,
         get_complete_chat_response,
         get_streamed_chat_response,
+        QianfanChatModelName,
         QianfanChatRequestBody,
+        
     };
+    use crate::qianfan::chat::{
+        QianfanChatMessage,
+        QianfanChatRole,
+    };
+
+    fn create_client() -> reqwest::Client {
+        reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .unwrap()
+    }
 
     #[tokio::test]
     async fn test_get_complete_chat_response() -> Result<()> {
-
-        let access_token = get_access_token().await?;
-        println!("access_token: {}", access_token);
+        // Create an HTTP client
+        let client = create_client();
 
         // Call API to get chat response
         let response = get_complete_chat_response(
-            &QianfanChatRequestBody::default()
+            &client,
+            QianfanChatModelName::ErnieBotTurbo,
+            &QianfanChatRequestBody::builder()
                 .messages(vec![
-                    ChatMessage {
-                        role: ChatRole::User,
+                    QianfanChatMessage {
+                        role: QianfanChatRole::User,
                         content: "What is Rust?".to_string(),
                     },
                 ])
                 .temperature(0.9)
+                .build()
         ).await;
 
         println!("{:#?}", response);
@@ -126,13 +150,14 @@ mod tests {
 
         // Call API to get chat response
         let mut response = get_streamed_chat_response(
-            &QianfanChatRequestBody::default()
+            &QianfanChatRequestBody::builder()
                 .messages(vec![
-                    ChatMessage {
-                        role: ChatRole::User,
+                    QianfanChatMessage {
+                        role: QianfanChatRole::User,
                         content: "What is Rust?".to_string(),
                     },
                 ])
+                .build()
         ).await?;
 
         while let Some(response) = response.next().await {

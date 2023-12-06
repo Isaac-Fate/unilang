@@ -38,13 +38,14 @@ mod tests {
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
         let model = ChatModel::builder()
-            .name(ChatModelName::OpenAIGPT4)
+            .name(ChatModelName::OpenAIGPT3_5Turbo16K)
+            .profile("You are a professional Flutter developer.")
             .build();
 
         let messages = vec![
             ChatMessage {
                 role: ChatRole::User,
-                content: "What is Rust?".to_string(),
+                content: "How to spwan a thread? (Explain in one sentence.)".to_string(),
             },
         ];
 

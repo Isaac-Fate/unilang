@@ -1,7 +1,8 @@
 use serde::Deserialize;
 use bytes::Bytes;
+use super::QianfanChatTokenUsage;
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize)]
 pub struct QianfanChatResponse {
     pub id: String,
     pub object: String,
@@ -11,7 +12,7 @@ pub struct QianfanChatResponse {
     pub is_truncated: bool,
     pub result: String,
     pub need_clear_history: bool,
-    pub usage: Usage,
+    pub usage: QianfanChatTokenUsage,
 }
 
 impl TryFrom<Bytes> for QianfanChatResponse {
@@ -42,9 +43,3 @@ pub enum QianfanChatResponseParseError {
     JsonParseError(#[from] serde_json::Error),
 }
 
-#[derive(Debug, Deserialize, PartialEq)]
-pub struct Usage {
-    pub prompt_tokens: u32,
-    pub completion_tokens: u32,
-    pub total_tokens: u32,
-}

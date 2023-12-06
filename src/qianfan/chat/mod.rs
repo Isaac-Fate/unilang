@@ -1,5 +1,11 @@
 pub use super::QianfanError;
 
+mod message;
+pub use message::{
+    QianfanChatMessage,
+    QianfanChatRole,
+};
+
 mod request_body;
 pub use request_body::QianfanChatRequestBody;
 

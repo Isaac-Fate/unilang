@@ -19,7 +19,7 @@ pub async fn get_complete_chat_response(request_body: &OpenAIChatRequestBody) ->
 
     // Call API to get chat response
     let response = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(60))
         .build()?
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", OPENAI_API_KEY.as_str()))

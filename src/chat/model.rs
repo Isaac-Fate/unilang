@@ -75,8 +75,8 @@ impl ChatModelBuilder {
     }
 
     /// Set the system prompt of the chat model, which serves as the profile.
-    pub fn profile(mut self, profile: Option<String>) -> Self {
-        self.profile = profile;
+    pub fn profile<S: AsRef<str>>(mut self, profile: S) -> Self {
+        self.profile = Some(profile.as_ref().to_string());
         self
     }
 
