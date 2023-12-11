@@ -1,7 +1,10 @@
+use std::time::Duration;
+use reqwest::Client;
 use super::ChatModelName;
 
 #[derive(Debug)]
 pub struct ChatModel {
+    pub client: Client,
     pub name: ChatModelName,
     pub temperature: f32,
     pub top_p: f32,
@@ -11,6 +14,7 @@ pub struct ChatModel {
 
 impl ChatModel {
     pub fn new(
+        client: Client,
         name: ChatModelName,
         temperature: f32,
         top_p: f32,
@@ -18,6 +22,7 @@ impl ChatModel {
         profile: Option<String>,
     ) -> Self {
         Self {
+            client,
             name,
             temperature,
             top_p,
@@ -33,6 +38,7 @@ impl ChatModel {
 }
 
 pub struct ChatModelBuilder {
+    client: Client,
     name: ChatModelName,
     temperature: f32,
     top_p: f32,
@@ -43,12 +49,21 @@ pub struct ChatModelBuilder {
 impl ChatModelBuilder {
     pub fn new() -> Self {
         Self {
+            client: Client::builder()
+                .timeout(Duration::from_secs(60))
+                .build()
+                .unwrap(),
             name: ChatModelName::OpenAIGPT3_5Turbo16K,
             temperature: 1.0,
             top_p: 1.0,
             presence_penalty: 1.0,
             profile: None,
         }
+    }
+
+    pub fn client(mut self, client: Client) -> Self {
+        self.client = client;
+        self
     }
 
     /// Set the name of the chat model.
@@ -83,6 +98,7 @@ impl ChatModelBuilder {
     /// Build the chat model.
     pub fn build(self) -> ChatModel {
         ChatModel::new(
+            self.client,
             self.name,
             self.temperature,
             self.top_p,

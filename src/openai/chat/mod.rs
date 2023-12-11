@@ -2,7 +2,11 @@ mod message;
 pub use message::{OpenAIChatMessage, OpenAIChatRole};
 
 mod response;
-pub use response::OpenAIChatCompletion;
+pub use response::{
+    OpenAIChatCompletion, 
+    OpenAIChatCompletionChunk, 
+    OpenAIChatCompletionStream,
+};
 
 mod model_names;
 pub use model_names::OpenAIChatModelName;

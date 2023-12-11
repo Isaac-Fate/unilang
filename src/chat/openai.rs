@@ -29,6 +29,7 @@ pub async fn get_complete_chat_response(
     // Call API to get chat response
     Ok(
         openai::chat::get_complete_chat_response(
+            &model.client,
             &OpenAIChatRequestBody::builder()
                 .model(model_name.as_str())
                 .messages(

@@ -54,21 +54,22 @@ pub async fn get_complete_chat_response(
 }
 
 /// Call Qianfan chat API and return a stream of chat responses.
-pub async fn get_streamed_chat_response(request_body: &QianfanChatRequestBody) -> Result<impl Stream<Item = QianfanChatResponse>> {
+pub async fn get_streamed_chat_response(
+    client: &Client,
+    request_body: &QianfanChatRequestBody
+) -> Result<impl Stream<Item = QianfanChatResponse>> {
     // Convert to a map
     let mut request_body = serde_json::to_value(request_body)?.as_object()
         .unwrap()
         .to_owned();
 
-    // Set the key "stream" to false
+    // Set the key "stream" to true
     request_body.insert(
         "stream".to_string(), serde_json::json!(true)
     );
 
     // Call API to get chat response
-    let response = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
-        .build()?
+    let response = client
         .post("https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/eb-instant")
         .query(&[
             ("access_token", get_access_token().await?.as_str()),
@@ -144,12 +145,15 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_streamed_chat_response() -> Result<()> {
+        // Create an HTTP client
+        let client = create_client();
 
         let access_token = get_access_token().await?;
         println!("access_token: {}", access_token);
 
         // Call API to get chat response
         let mut response = get_streamed_chat_response(
+            &client,
             &QianfanChatRequestBody::builder()
                 .messages(vec![
                     QianfanChatMessage {
